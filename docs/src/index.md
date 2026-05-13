@@ -57,4 +57,17 @@ The fitted object stores treated-unit counterfactuals and diagnostics:
 )
 ```
 
-See the vignettes for matrix, DataFrame, diagnostic, and placebo workflows.
+## Vignettes
+
+- [Getting Started](vignettes/01_getting_started.md): matrix workflow with simulated data.
+- [DataFrame Panels](vignettes/02_dataframe_panels.md): long-panel conversion and direct table estimation.
+- [Diagnostics and Placebos](vignettes/03_diagnostics_placebos.md): pre-fit checks, CV output, and placebo routines.
+- [Paper Application](vignettes/04_paper_application.md): replication scaffold for the COVID stay-at-home order example.
+
+## Examples
+
+Runnable scripts live in the repository:
+
+- [`examples/01_matrix_workflow.jl`](https://github.com/xiangao/MSC.jl/blob/main/examples/01_matrix_workflow.jl)
+- [`examples/02_dataframe_workflow.jl`](https://github.com/xiangao/MSC.jl/blob/main/examples/02_dataframe_workflow.jl)
+- [`examples/03_covid_sah_orders.jl`](https://github.com/xiangao/MSC.jl/blob/main/examples/03_covid_sah_orders.jl)

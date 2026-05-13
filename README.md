@@ -51,6 +51,21 @@ weights_table(est)
 effect_curve(est)
 ```
 
+## Vignettes and Examples
+
+Documentation vignettes:
+
+- [Getting Started](docs/src/vignettes/01_getting_started.md)
+- [DataFrame Panels](docs/src/vignettes/02_dataframe_panels.md)
+- [Diagnostics and Placebos](docs/src/vignettes/03_diagnostics_placebos.md)
+- [Paper Application](docs/src/vignettes/04_paper_application.md)
+
+Runnable examples:
+
+- [Matrix workflow](examples/01_matrix_workflow.jl)
+- [DataFrame workflow](examples/02_dataframe_workflow.jl)
+- [COVID stay-at-home orders application](examples/03_covid_sah_orders.jl)
+
 ## Development
 
 ```julia
