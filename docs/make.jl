@@ -37,6 +37,7 @@ if get(ENV, "CI", "false") == "true"
     deploydocs(
         repo = "github.com/xiangao/MSC.jl.git",
         devbranch = "main",
+        versions = nothing,
         push_preview = false,
     )
 end
