@@ -5,6 +5,8 @@ disaggregated panels with many treated units. It is inspired by Shen, Song, and
 Abadie, "Efficiently Learning Synthetic Control Models for High-dimensional
 Disaggregated Data" (2025).
 
+Documentation: https://xiangao.github.io/MSC.jl/
+
 The estimator fits
 
 ```text
