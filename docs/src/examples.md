@@ -37,14 +37,14 @@ Source:
 ## Paper Application Scaffold
 
 ```bash
-BLS_LAUS_COUNTY_FILE=/path/to/la.data.64.County \
-    julia --project=. examples/03_covid_sah_orders.jl
+julia --project=. examples/03_covid_sah_orders.jl
 ```
 
 This script implements the package's replication scaffold for Shen, Song, and
 Abadie's COVID-19 stay-at-home orders application. It expects a local BLS LAUS
-county flat file because BLS bulk-download access is sometimes blocked for
-scripted requests.
+county flat file at `data/la.data.64.County`, or an explicit
+`BLS_LAUS_COUNTY_FILE`, because BLS bulk-download access is sometimes blocked
+for scripted requests.
 
 Source:
 [`examples/03_covid_sah_orders.jl`](https://github.com/xiangao/MSC.jl/blob/main/examples/03_covid_sah_orders.jl)

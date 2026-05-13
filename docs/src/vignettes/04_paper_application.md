@@ -18,6 +18,8 @@ about 5.06 percentage points. The text says the data start in January 2010, but
 also reports `T0 = 147`; with April 2020 as the post period, `T0 = 147`
 corresponds to January 2008 through March 2020. The example script therefore
 defaults to January 2008 so that the pre-period count matches the draft.
+The replication script also excludes Alaska and the District of Columbia, which
+aligns the BLS county file with the paper's reported treated-unit count.
 
 ## Data
 
@@ -31,38 +33,51 @@ https://download.bls.gov/pub/time.series/la/
 BLS sometimes blocks automated bulk downloads. For that reason, the package
 does not download hundreds of megabytes during documentation builds. Instead,
 download the county LAUS data file manually from the BLS flat-file archive and
-point the example script to it.
+save it as `data/la.data.64.County` from the directory where you run the
+example. You can also set `BLS_LAUS_COUNTY_FILE` to an explicit file path.
 
 ## Run The Replication Script
 
 From the package root:
 
 ```bash
-BLS_LAUS_COUNTY_FILE=/path/to/la.data.64.County \
-    julia --project=. examples/03_covid_sah_orders.jl
+julia --project=. examples/03_covid_sah_orders.jl
 ```
 
 The script:
 
 1. reads the BLS county unemployment-rate series;
 2. keeps complete county histories through April 2020;
-3. uses the seven no-order states as controls;
-4. builds the common-adoption panel;
-5. estimates MSC with cross-validated regularization;
-6. reports ATT, selected `lambda`, and pre-treatment RMSE.
+3. excludes Alaska and the District of Columbia to match the reported sample;
+4. uses the seven no-order states as controls;
+5. builds the common-adoption panel;
+6. estimates MSC with the application value `lambda = 0.03`;
+7. reports ATT, selected `lambda`, and pre-treatment RMSE.
 
 The core estimation call is:
 
 ```julia
-est = msc_estimate(
-    panel;
-    nlambda = 20,
-    nfolds = 5,
-    standardize = false,
-    max_iter = 1500,
-    tol = 1e-6,
-)
+est = msc_estimate(panel; lambdas = [0.03], standardize = false)
 ```
+
+Set `MSC_CV=true` to run a cross-validated penalty path instead of the fixed
+application value. The example defaults to `MSC_MAX_ITER=100` and
+`MSC_TOL=1e-4` so the large county-level application returns in a reasonable
+time on a laptop; increase those environment variables for a tighter solver
+tolerance.
+
+With the current BLS flat file downloaded under `data/`, the script constructs
+the paper-sized panel:
+
+```text
+Controls: 438 counties in Arkansas, Iowa, Nebraska, North Dakota, South Dakota, Utah, Wyoming
+Treated:  2674 counties
+T0:       147 pre-treatment months
+ATT = 4.9552
+```
+
+That estimate uses `lambda = 0.03` and the default bounded solver settings. The
+draft benchmark is about 5.06 percentage points.
 
 ## Interpreting Differences
 

@@ -5,7 +5,7 @@ disaggregated panels with many treated units. It is inspired by Shen, Song, and
 Abadie, "Efficiently Learning Synthetic Control Models for High-dimensional
 Disaggregated Data" (2025).
 
-Documentation: https://xiangao.github.io/MSC.jl/
+Documentation, vignettes, and examples: https://xiangao.github.io/MSC.jl/
 
 The estimator fits
 
@@ -53,24 +53,6 @@ weights_table(est)
 effect_curve(est)
 ```
 
-## Vignettes and Examples
-
-Documentation vignettes:
-
-- [Getting Started](docs/src/vignettes/01_getting_started.md): matrix workflow with simulated data.
-- [DataFrame Panels](docs/src/vignettes/02_dataframe_panels.md): long-panel conversion and direct table estimation.
-- [Diagnostics and Placebos](docs/src/vignettes/03_diagnostics_placebos.md): pre-fit checks, CV output, and placebo routines.
-- [Paper Application](docs/src/vignettes/04_paper_application.md): replication scaffold for the COVID stay-at-home order example.
-
-Runnable examples:
-
-- [Matrix workflow](examples/01_matrix_workflow.jl)
-- [DataFrame workflow](examples/02_dataframe_workflow.jl)
-- [COVID stay-at-home orders application](examples/03_covid_sah_orders.jl)
-
-The documentation also has a first-class [Examples](docs/src/examples.md) page,
-matching the same navigation style used in the other Julia packages.
-
 ## Development
 
 ```julia
@@ -84,9 +66,9 @@ Build docs locally:
 julia --project=docs docs/make.jl
 ```
 
-Run the paper-application scaffold with a local BLS LAUS county flat file:
+Run the paper-application scaffold after downloading the BLS LAUS county flat
+file to `data/la.data.64.County`, or set an explicit path:
 
 ```bash
-BLS_LAUS_COUNTY_FILE=/path/to/la.data.64.County \
-    julia --project=. examples/03_covid_sah_orders.jl
+julia --project=. examples/03_covid_sah_orders.jl
 ```
