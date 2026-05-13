@@ -23,6 +23,7 @@ makedocs(
             "Getting Started" => "vignettes/01_getting_started.md",
             "DataFrame Panels" => "vignettes/02_dataframe_panels.md",
             "Diagnostics and Placebos" => "vignettes/03_diagnostics_placebos.md",
+            "Paper Application" => "vignettes/04_paper_application.md",
         ],
         "Reference" => "reference.md",
     ],

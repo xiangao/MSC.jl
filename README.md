@@ -63,3 +63,10 @@ Build docs locally:
 ```bash
 julia --project=docs docs/make.jl
 ```
+
+Run the paper-application scaffold with a local BLS LAUS county flat file:
+
+```bash
+BLS_LAUS_COUNTY_FILE=/path/to/la.data.64.County \
+    julia --project=. examples/03_covid_sah_orders.jl
+```
