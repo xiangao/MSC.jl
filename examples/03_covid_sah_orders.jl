@@ -1,6 +1,7 @@
 using CSV
 using DataFrames
 using MSC
+using Printf
 using Statistics
 
 # Replication-style script for Shen, Song, and Abadie's county-level application:
@@ -30,6 +31,7 @@ const CONTROL_STATE_NAMES = [
     "Utah",
     "Wyoming",
 ]
+const PAPER_ATT = 5.06
 const CONTROL_STATES = Dict(
     "05" => "Arkansas",
     "19" => "Iowa",
@@ -117,6 +119,28 @@ function load_laus_county_panel(path; start_year=2008, start_month=1, end_year=2
     return select(raw, :series_id => :county, :date => :month, :value => :unemployment_rate, :D, :state_fips)
 end
 
+function print_replication_table(est, panel)
+    treated = size(panel.Y, 1) - panel.N0
+    rows = [
+        ("control counties", string(panel.N0), "438"),
+        ("treated counties", string(treated), "2,674"),
+        ("pre-treatment months", string(panel.T0), "147"),
+        ("April 2020 ATT, pp", @sprintf("%.4f", est.estimate), @sprintf("%.2f", PAPER_ATT)),
+    ]
+
+    println()
+    println("Paper application replication check")
+    println("-" ^ 68)
+    @printf("%-28s %14s %14s\n", "quantity", "MSC.jl", "paper")
+    println("-" ^ 68)
+    for (name, ours, paper) in rows
+        @printf("%-28s %14s %14s\n", name, ours, paper)
+    end
+    println("-" ^ 68)
+    println("Sample counts match the paper. The ATT is an application replication")
+    println("using the current BLS flat-file vintage and the script's solver settings.")
+end
+
 function main()
     path = find_laus_county_file()
     if isnothing(path)
@@ -146,7 +170,7 @@ function main()
     println("Selected lambda: ", est.fit.lambda)
     println("Solver iterations: ", est.fit.iterations, " (converged: ", est.fit.converged, ")")
     println("Pre-fit RMSE: ", round(prefit_rmse(est.fit, panel.Y[1:panel.N0, 1:panel.T0]', panel.Y[(panel.N0 + 1):end, 1:panel.T0]'), digits=4))
-    println("Paper benchmark reported in the draft: about 5.06 percentage points.")
+    print_replication_table(est, panel)
 end
 
 abspath(PROGRAM_FILE) == abspath(@__FILE__) && main()

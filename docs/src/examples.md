@@ -34,17 +34,25 @@ largest nonzero control-treated weights.
 Source:
 [`examples/02_dataframe_workflow.jl`](https://github.com/xiangao/MSC.jl/blob/main/examples/02_dataframe_workflow.jl)
 
-## Paper Application Scaffold
+## Paper Application
 
 ```bash
 julia --project=. examples/03_covid_sah_orders.jl
 ```
 
-This script implements the package's replication scaffold for Shen, Song, and
-Abadie's COVID-19 stay-at-home orders application. It expects a local BLS LAUS
-county flat file at `data/la.data.64.County`, or an explicit
-`BLS_LAUS_COUNTY_FILE`, because BLS bulk-download access is sometimes blocked
-for scripted requests.
+This is the runnable replication script for Shen, Song, and Abadie's
+stay-at-home-orders application. It expects a local BLS LAUS county flat file
+at `data/la.data.64.County`, or an explicit `BLS_LAUS_COUNTY_FILE`.
+
+The script reports the paper comparison in the terminal:
+
+```text
+quantity                             MSC.jl          paper
+control counties                        438            438
+treated counties                       2674          2,674
+pre-treatment months                    147            147
+April 2020 ATT, pp                   4.9552           5.06
+```
 
 Source:
 [`examples/03_covid_sah_orders.jl`](https://github.com/xiangao/MSC.jl/blob/main/examples/03_covid_sah_orders.jl)

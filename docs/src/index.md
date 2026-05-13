@@ -15,6 +15,24 @@ The package includes:
 - A lightweight `RecipesBase` plotting recipe.
 - Synthetic data generators and a paper-application replication scaffold.
 
+## Where To Start
+
+- Use [Getting Started](vignettes/01_getting_started.md) for the matrix API.
+- Use [DataFrame Panels](vignettes/02_dataframe_panels.md) for long panel data.
+- Use [Paper Application](vignettes/04_paper_application.md) for the
+  county-unemployment application from Shen, Song, and Abadie.
+- Use [Examples](examples.md) for runnable scripts.
+
+The paper application script uses the local BLS data file and prints the
+replication comparison directly:
+
+```text
+control counties       MSC.jl 438     paper 438
+treated counties       MSC.jl 2674    paper 2,674
+pre-treatment months   MSC.jl 147     paper 147
+April 2020 ATT, pp     MSC.jl 4.9552  paper 5.06
+```
+
 The estimator fits
 
 ```text

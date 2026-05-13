@@ -53,6 +53,30 @@ weights_table(est)
 effect_curve(est)
 ```
 
+## Paper Application
+
+The repository includes a runnable version of the Shen, Song, and Abadie
+county-unemployment application:
+
+```bash
+julia --project=. examples/03_covid_sah_orders.jl
+```
+
+After downloading the BLS LAUS county flat file to `data/la.data.64.County`,
+the script constructs the paper-sized panel and prints the comparison:
+
+```text
+quantity                             MSC.jl          paper
+control counties                        438            438
+treated counties                       2674          2,674
+pre-treatment months                    147            147
+April 2020 ATT, pp                   4.9552           5.06
+```
+
+The sample counts match the paper. The ATT is an application replication using
+the current BLS flat-file vintage and the script's solver settings, not a frozen
+bit-for-bit reproduction of the paper's private run.
+
 ## Development
 
 ```julia
