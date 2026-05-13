@@ -25,6 +25,7 @@ makedocs(
             "Diagnostics and Placebos" => "vignettes/03_diagnostics_placebos.md",
             "Paper Application" => "vignettes/04_paper_application.md",
         ],
+        "Examples" => "examples.md",
         "Reference" => "reference.md",
     ],
     warnonly = true,

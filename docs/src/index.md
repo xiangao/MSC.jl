@@ -4,6 +4,17 @@
 disaggregated panels. It is designed for settings with many treated units and many
 controls where fitting one synthetic-control model per treated unit is expensive.
 
+The package includes:
+
+- `fit_msc` and `predict_counterfactual` for matrix-level MSC estimation.
+- `msc_estimate` for panel-matrix and long-table ATT estimation.
+- `panel_matrices` for balanced common-adoption panel conversion.
+- Cross-validated regularization over the MSC penalty path.
+- Treated-unit counterfactuals, effect curves, unit effects, and weight tables.
+- Time-placebo and control-unit placebo routines.
+- A lightweight `RecipesBase` plotting recipe.
+- Synthetic data generators and a paper-application replication scaffold.
+
 The estimator fits
 
 ```text
@@ -20,6 +31,13 @@ where `X_pre` is `T0 x n_controls`, `Y_pre` is `T0 x n_treated`, and `Theta`
 maps control outcomes to treated-unit counterfactuals.
 
 ## Installation
+
+```julia
+using Pkg
+Pkg.add(url = "https://github.com/xiangao/MSC.jl")
+```
+
+For local development:
 
 ```julia
 using Pkg
@@ -57,17 +75,4 @@ The fitted object stores treated-unit counterfactuals and diagnostics:
 )
 ```
 
-## Vignettes
-
-- [Getting Started](vignettes/01_getting_started.md): matrix workflow with simulated data.
-- [DataFrame Panels](vignettes/02_dataframe_panels.md): long-panel conversion and direct table estimation.
-- [Diagnostics and Placebos](vignettes/03_diagnostics_placebos.md): pre-fit checks, CV output, and placebo routines.
-- [Paper Application](vignettes/04_paper_application.md): replication scaffold for the COVID stay-at-home order example.
-
-## Examples
-
-Runnable scripts live in the repository:
-
-- [`examples/01_matrix_workflow.jl`](https://github.com/xiangao/MSC.jl/blob/main/examples/01_matrix_workflow.jl)
-- [`examples/02_dataframe_workflow.jl`](https://github.com/xiangao/MSC.jl/blob/main/examples/02_dataframe_workflow.jl)
-- [`examples/03_covid_sah_orders.jl`](https://github.com/xiangao/MSC.jl/blob/main/examples/03_covid_sah_orders.jl)
+See the vignettes and examples pages for complete workflows.
