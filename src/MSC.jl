@@ -39,6 +39,7 @@ matrix mapping control outcomes to treated counterfactual outcomes.
 struct MSCFit
     theta::Matrix{Float64}
     lambda::Float64
+    lambda_idx::Int
     lambdas::Vector{Float64}
     cv_errors::Union{Nothing,Vector{Float64}}
     objective_values::Vector{Float64}
@@ -47,6 +48,7 @@ struct MSCFit
     x_mean::Vector{Float64}
     x_scale::Vector{Float64}
     y_mean::Vector{Float64}
+    intercept::Vector{Float64}
     standardize::Bool
 end
 
@@ -127,11 +129,6 @@ function objective(X::AbstractMatrix{<:Real}, Y::AbstractMatrix{<:Real},
     return nuclear_norm(Y - X * theta) / sqrt(nobs) + lambda * sum(abs, theta)
 end
 
-function _default_lambdas(nlambda::Int, lambda_min_ratio::Float64)
-    nlambda >= 1 || throw(ArgumentError("nlambda must be positive"))
-    0 < lambda_min_ratio <= 1 || throw(ArgumentError("lambda_min_ratio must be in (0, 1]"))
-end
-
 function _center_scale(X::AbstractMatrix{<:Real}, Y::AbstractMatrix{<:Real}, standardize::Bool)
     Xf = Matrix{Float64}(X)
     Yf = Matrix{Float64}(Y)
@@ -160,7 +157,8 @@ end
 
 function _lambda_path(X::AbstractMatrix{Float64}, Y::AbstractMatrix{Float64};
                       nlambda::Int=50, lambda_min_ratio::Float64=1e-2)
-    _default_lambdas(nlambda, lambda_min_ratio)
+    nlambda >= 1 || throw(ArgumentError("nlambda must be positive"))
+    0 < lambda_min_ratio <= 1 || throw(ArgumentError("lambda_min_ratio must be in (0, 1]"))
     lambda_max = _lambda_max(X, Y)
     nlambda == 1 && return [lambda_max]
     lambda_min = lambda_min_ratio * lambda_max
@@ -307,7 +305,10 @@ function _cv_errors(X::Matrix{Float64}, Y::Matrix{Float64}, lambdas::AbstractVec
             errors[j] += sum(abs2, Ytest - Xtest * θ)
         end
     end
-    return errors ./ nfolds
+    # Divide by nobs (not nfolds): each observation appears in exactly one test fold,
+    # so summing across folds gives total test-set squared error; dividing by nobs
+    # gives per-observation MSE regardless of unequal fold sizes.
+    return errors ./ size(X, 1)
 end
 
 function _as_dataframe(table)
@@ -401,6 +402,9 @@ function simulate_msc(; ncontrols::Int=30, ntreated::Int=8, T0::Int=60, T1::Int=
         donors = randperm(rng, ncontrols)[1:sparsity]
         raw = rand(rng, sparsity)
         signs = rand(rng, [-1.0, 1.0], sparsity)
+        # MSC allows negative weights (unlike classical SC). Weights are normalized
+        # so their absolute values sum to 1, matching the L1-regularized estimator's
+        # implicit scale. The signed sum may differ from 1.
         theta[donors, j] = signs .* raw ./ sum(raw)
     end
 
@@ -455,16 +459,36 @@ function fit_msc(Xpre::AbstractMatrix{<:Real}, Ypre::AbstractMatrix{<:Real};
 
     cv = isnothing(nfolds) ? nothing :
          _cv_errors(X, Y, λs; nfolds=nfolds, rng=rng, max_iter=max_iter, tol=tol)
-    best = isnothing(cv) ? length(λs) : argmin(cv)
+
+    if isnothing(cv)
+        if isnothing(lambdas)
+            # Auto-generated path with no CV: pick middle as a conservative default.
+            # The path runs from lambda_max (all-zero theta) down to lambda_min (least
+            # regularized). The extremes are both poor defaults; the middle balances
+            # sparsity and fit. Pass nfolds for data-driven selection.
+            best = div(length(λs) + 1, 2)
+            @warn "No nfolds specified; defaulting to middle of the lambda path " *
+                  "(lambda=$(round(λs[best], sigdigits=3))). Pass nfolds for CV-selected lambda."
+        else
+            best = length(λs)
+        end
+    else
+        best = argmin(cv)
+    end
 
     thetas, obj_paths, iters, conv = _fit_path(X, Y, λs; max_iter=max_iter, tol=tol, verbose=verbose)
     theta_scaled = thetas[best]
     theta = theta_scaled ./ reshape(x_scale, :, 1)
     obj = obj_paths[best]
+    intercept = y_mean - vec(x_mean' * theta)
+
+    conv[best] || @warn "MSC did not converge for lambda=$(round(λs[best], sigdigits=3)); " *
+                        "try increasing max_iter (current: $max_iter) or loosening tol."
 
     return MSCFit(
         theta,
         λs[best],
+        best,
         λs,
         cv,
         obj,
@@ -473,6 +497,7 @@ function fit_msc(Xpre::AbstractMatrix{<:Real}, Ypre::AbstractMatrix{<:Real};
         x_mean,
         x_scale,
         y_mean,
+        intercept,
         standardize,
     )
 end
@@ -487,8 +512,7 @@ function predict_counterfactual(fit::MSCFit, Xpost::AbstractMatrix{<:Real})
     Xf = Matrix{Float64}(Xpost)
     size(Xf, 2) == size(fit.theta, 1) ||
         throw(DimensionMismatch("Xpost must have one column per control unit"))
-    intercept = fit.y_mean - vec(fit.x_mean' * fit.theta)
-    return Xf * fit.theta .+ reshape(intercept, 1, :)
+    return Xf * fit.theta .+ reshape(fit.intercept, 1, :)
 end
 
 """
@@ -566,7 +590,8 @@ error column is `missing`.
 """
 function cv_table(fit::MSCFit)
     err = isnothing(fit.cv_errors) ? fill(missing, length(fit.lambdas)) : fit.cv_errors
-    selected = fit.lambdas .== fit.lambda
+    selected = falses(length(fit.lambdas))
+    selected[fit.lambda_idx] = true
     return DataFrame(lambda=fit.lambdas, cv_error=err, selected=selected)
 end
 
@@ -614,10 +639,8 @@ function msc_estimate(table, unit::Symbol, time::Symbol, outcome::Symbol, treatm
     return msc_estimate(panel; kwargs...)
 end
 
-function _subset_panel(Y::Matrix{Float64}, N0::Int, control_idx::Vector{Int}, treated_idx::Vector{Int})
-    controls = control_idx
-    treated = treated_idx
-    return vcat(Y[controls, :], Y[treated, :]), length(controls)
+function _subset_panel(Y::Matrix{Float64}, control_idx::Vector{Int}, treated_idx::Vector{Int})
+    return vcat(Y[control_idx, :], Y[treated_idx, :]), length(control_idx)
 end
 
 """
@@ -665,7 +688,7 @@ function placebo_distribution(Y::AbstractMatrix{<:Real}, N0::Integer, T0::Intege
         perm = randperm(rng, N0)
         placebo_treated = sort(perm[1:ntrt])
         placebo_controls = sort(perm[(ntrt + 1):end])
-        Yp, N0p = _subset_panel(Yf, N0, placebo_controls, placebo_treated)
+        Yp, N0p = _subset_panel(Yf, placebo_controls, placebo_treated)
         estimates[r] = msc_estimate(Yp, N0p, T0; kwargs...).estimate
     end
     return estimates

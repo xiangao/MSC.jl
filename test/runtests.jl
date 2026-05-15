@@ -62,6 +62,35 @@ end
     @test nrow(cv_table(est.fit)) == 5
 end
 
+@testset "convergence, cv_table, and intercept" begin
+    rng = MersenneTwister(17)
+    T0 = 40
+    ncontrols = 6
+    ntreated = 2
+    Xpre = randn(rng, T0, ncontrols)
+    theta_true = zeros(ncontrols, ntreated)
+    theta_true[1, 1] = 0.6; theta_true[2, 2] = 0.8
+    Ypre = Xpre * theta_true .+ 0.01 .* randn(rng, T0, ntreated)
+
+    # Convergence flag should be true for an easy, low-noise problem
+    fit = fit_msc(Xpre, Ypre; lambdas=[0.003], max_iter=5000, tol=1e-7)
+    @test fit.converged
+
+    # cv_table: selected column should have exactly one true, at the correct index
+    fit_cv = fit_msc(Xpre, Ypre; nlambda=8, nfolds=4, rng=rng, max_iter=2000, tol=1e-6)
+    tbl = cv_table(fit_cv)
+    @test sum(tbl.selected) == 1
+    @test tbl.selected[fit_cv.lambda_idx]
+    @test tbl.lambda[fit_cv.lambda_idx] == fit_cv.lambda
+
+    # Intercept round-trip: predict_counterfactual on training data should match
+    # the mean of Ypre when Xpre is the design matrix (i.e., intercept is applied correctly)
+    yhat_pre = predict_counterfactual(fit, Xpre)
+    @test size(yhat_pre) == (T0, ntreated)
+    # Residual mean should be small (intercept centers the prediction)
+    @test all(abs.(vec(mean(Ypre .- yhat_pre; dims=1))) .< 0.05)
+end
+
 @testset "simulation and DataFrame panel API" begin
     sim = simulate_msc(ncontrols=10, ntreated=3, T0=35, T1=4, tau=1.5, seed=11, noise=0.01)
     est = msc_estimate(sim.Y, sim.N0, sim.T0; lambdas=[0.002], max_iter=1200, tol=1e-7)
