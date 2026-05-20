@@ -560,7 +560,7 @@ uuid = "e6f89c97-d47a-5376-807f-9c37f3926c36"
 version = "1.2.0"
 
 [[deps.MSC]]
-deps = ["CSV", "DataFrames", "LinearAlgebra", "Random", "RecipesBase", "Statistics", "Tables"]
+deps = ["DataFrames", "LinearAlgebra", "Random", "RecipesBase", "Statistics", "Tables"]
 path = "/home/xao/projects/software/MSC.jl/docs/.."
 uuid = "4fb85ae8-2f51-4a26-9aed-17d67218eb56"
 version = "0.1.0"
