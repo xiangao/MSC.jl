@@ -1,9 +1,8 @@
 # MSC.jl
 
-`MSC.jl` implements multivariate synthetic control for high-dimensional
-disaggregated panels with many treated units. It is inspired by Shen, Song, and
-Abadie, "Efficiently Learning Synthetic Control Models for High-dimensional
-Disaggregated Data" (2025).
+`MSC.jl` implements multivariate synthetic control for panels with many treated
+units. The estimator follows Shen, Song, and Abadie, "Efficiently Learning
+Synthetic Control Models for High-dimensional Disaggregated Data" (2025).
 
 Documentation, vignettes, and examples: https://xiangao.github.io/MSC.jl/
 
@@ -55,8 +54,8 @@ effect_curve(est)
 
 ## Paper Application
 
-The repository includes a runnable version of the Shen, Song, and Abadie
-county-unemployment application:
+The repository includes a runnable version of the county-unemployment
+application from Shen, Song, and Abadie:
 
 ```bash
 julia --project=. examples/03_covid_sah_orders.jl
